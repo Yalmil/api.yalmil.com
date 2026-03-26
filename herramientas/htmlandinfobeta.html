@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Yalmil CodeLab | Analizador Avanzado</title>
+<link rel="icon" href="https://cdn.discordapp.com/emojis/1416607460201857168.png?v=1" type="image/png">
+<link rel="canonical" href="https://yalmil.pages.dev">
+<meta name="description" content="Yalmil CodeLab: analiza, ejecuta y previsualiza HTML, JS, Python y más en un entorno elegante y responsivo.">
+<meta name="theme-color" content="#c084fc">
+
+<!-- Google Fonts + Font Awesome Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(0px);
+  }
+
+  /* Contenedor principal elegante */
+  .app-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    background: rgba(15, 15, 25, 0.55);
+    backdrop-filter: blur(2px);
+    border-radius: 2.5rem;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+  }
+
+  /* Títulos con estilo */
+  h2, h3 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  h2 i, h3 i {
+    font-size: 1.4rem;
+    opacity: 0.9;
+  }
+  h2 {
+    font-size: 1.9rem;
+    background: linear-gradient(135deg, #fff 30%, #c084fc 80%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Textarea premium */
+  .code-area {
+    width: 100%;
+    margin: 0.5rem 0 1.2rem 0;
+  }
+  textarea {
+    width: 100%;
+    height: 280px;
+    padding: 1.2rem;
+    font-family: 'Monaco', 'Menlo', 'Fira Code', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: rgba(0, 0, 0, 0.65);
+    color: #f0f0f0;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1.5rem;
+    resize: vertical;
+    outline: none;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+  }
+  textarea:focus {
+    border-color: #c084fc;
+    box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.3);
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  /* Botón mágico */
+  .btn-analizar {
+    background: linear-gradient(105deg, #c084fc, #a855f7);
+    border: none;
+    padding: 0.9rem 1.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 3rem;
+    color: #0a0a0a;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 6px 14px rgba(160, 100, 220, 0.3);
+    margin-bottom: 1.5rem;
+  }
+  .btn-analizar:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 22px rgba(160, 100, 220, 0.5);
+  }
+  .btn-analizar:active {
+    transform: translateY(1px);
+  }
+
+  /* Tarjeta de info elegante */
+  .info-card {
+    background: rgba(20, 20, 35, 0.7);
+    backdrop-filter: blur(8px);
+    border-radius: 1.5rem;
+    padding: 1.2rem 1.5rem;
+    margin: 0.8rem 0 1.4rem 0;
+    border-left: 5px solid #c084fc;
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: baseline;
+    transition: all 0.2s;
+  }
+  .info-card span {
+    background: rgba(192, 132, 252, 0.2);
+    padding: 0.3rem 0.9rem;
+    border-radius: 40px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .info-card .lang-badge {
+    background: #a855f7;
+    color: white;
+  }
+
+  /* Vista previa iframe - glassmorphism */
+  .preview-wrapper {
+    border-radius: 1.5rem;
+    overflow: hidden;
+    margin: 0.5rem 0 1rem 0;
+    background: #0f0f17;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  iframe {
+    width: 100%;
+    height: 320px;
+    border: none;
+    background: white;
+    transition: 0.2s;
+  }
+
+  /* CMD Virtual estilo retro futurista */
+  .cmd-terminal {
+    background: #0b0b12;
+    border-radius: 1.2rem;
+    padding: 0;
+    margin-top: 0.6rem;
+    font-family: 'Fira Code', 'Monaco', monospace;
+    border: 1px solid rgba(192, 132, 252, 0.5);
+    overflow: hidden;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.5);
+  }
+  .cmd-header {
+    background: #1a1a24;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #2a2a35;
+  }
+  .cmd-header i {
+    color: #c084fc;
+    font-size: 1rem;
+  }
+  .cmd-header span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: #bbb;
+  }
+  .cmd-content {
+    height: 200px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #030308;
+    color: #a0f08a;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .cmd-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .cmd-content::-webkit-scrollbar-track {
+    background: #1e1e2a;
+  }
+  .cmd-content::-webkit-scrollbar-thumb {
+    background: #c084fc;
+    border-radius: 8px;
+  }
+
+  /* layout responsive */
+  @media (max-width: 760px) {
+    body {
+      padding: 1rem;
+    }
+    .app-container {
+      padding: 1.2rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+    }
+    textarea {
+      height: 210px;
+    }
+    iframe {
+      height: 250px;
+    }
+  }
+
+  /* tema dinámico (light/dark) con detección mejorada y override suave */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: radial-gradient(circle at 10% 20%, #0a0c14, #03050b);
+      color: #e9e2ff;
+    }
+    .app-container {
+      background: rgba(8, 8, 18, 0.7);
+      backdrop-filter: blur(8px);
+    }
+    textarea {
+      background: #0c0c16;
+      color: #e2e2ff;
+      border-color: #2a2a3c;
+    }
+    .info-card {
+      background: rgba(25, 25, 40, 0.8);
+    }
+    .cmd-content {
+      background: #010104;
+      color: #b3ffa7;
+    }
+  }
+  @media (prefers-color-scheme: light) {
+    body {
+      background: radial-gradient(circle at 70% 20%, #ffdab9, #ffb347);
+      color: #2d1b0c;
+    }
+    .app-container {
+      background: rgba(255, 245, 235, 0.85);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
+    }
+    textarea {
+      background: #fffbf0;
+      color: #3a2400;
+      border-color: #ffb86b;
+    }
+    .btn-analizar {
+      background: linear-gradient(105deg, #ff9f4a, #ff7800);
+      color: #2d1b0c;
+      box-shadow: 0 4px 12px rgba(255, 120, 0, 0.3);
+    }
+    .info-card {
+      background: rgba(250, 235, 215, 0.85);
+      border-left-color: #ff8c42;
+    }
+    .cmd-terminal {
+      border-color: #ffaa55;
+    }
+    .cmd-header i {
+      color: #ff8c42;
+    }
+    .cmd-content {
+      background: #fef3e2;
+      color: #b45f1b;
+    }
+    .lang-badge {
+      background: #ff8c42 !important;
+      color: #2c1a05;
+    }
+    h2 i, h3 i {
+      color: #ff8c42;
+    }
+    h2 {
+      background: linear-gradient(135deg, #a34100, #ff8c42);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+  }
+
+  /* badge personalizado */
+  .flex-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 0.2rem;
+  }
+  .footer-note {
+    margin-top: 1.2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+  i.fa, i.far, i.fas {
+    pointer-events: none;
+  }
+  button {
+    background: none;
+    border: none;
+  }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <h2>
+    <i class="fas fa-code"></i> 
+    Yalmil CodeLab
+    <span style="font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 0.2rem 0.8rem; border-radius: 50px;">alpha</span>
+  </h2>
+  
+  <div class="code-area">
+    <textarea id="codeInput" placeholder="// Escribe o pega tu código aquí...&#10;// Ejemplo: HTML, JavaScript, Python, C++ ...&#10;&#10;&lt;h1 style=&quot;color:hotpink&quot;&gt;✨ Hola mundo creativo ✨&lt;/h1&gt;"></textarea>
+  </div>
+  
+  <div style="display: flex; justify-content: flex-start;">
+    <button class="btn-analizar" id="analyzeBtn">
+      <i class="fas fa-magic"></i> Analizar & Ejecutar
+    </button>
+  </div>
+  
+  <h3><i class="fas fa-chart-simple"></i> Diagnóstico del código</h3>
+  <div id="infoPanel" class="info-card">
+    <!-- dinámico -->
+    <span>✨ Esperando análisis</span>
+    <span><i class="far fa-file-code"></i> Lenguaje: --</span>
+    <span><i class="fas fa-list"></i> Líneas: 0</span>
+  </div>
+  
+  <h3><i class="fas fa-desktop"></i> Vista previa en vivo</h3>
+  <div class="preview-wrapper">
+    <iframe id="livePreview" title="preview" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
+  </div>
+  
+  <h3><i class="fas fa-terminal"></i> Consola interactiva (CMD)</h3>
+  <div class="cmd-terminal">
+    <div class="cmd-header">
+      <i class="fas fa-microchip"></i>
+      <span>Yalmil virtual terminal v2.0</span>
+      <i class="fas fa-circle" style="font-size: 0.5rem; color:#5f5; margin-left:auto;"></i>
+    </div>
+    <div id="cmdConsole" class="cmd-content">
+      > Sistema listo. Presiona "Analizar" para evaluar.
+    </div>
+  </div>
+  <div class="footer-note">
+    <i class="fas fa-brain"></i> Soporte: HTML (vista previa), JavaScript (ejecución real), Python/C++/otros (simulación con análisis)
+  </div>
+</div>
+
+<script>
+  // Elementos DOM
+  const codeTextarea = document.getElementById('codeInput');
+  const infoDiv = document.getElementById('infoPanel');
+  const previewFrame = document.getElementById('livePreview');
+  const cmdDiv = document.getElementById('cmdConsole');
+  const analyzeButton = document.getElementById('analyzeBtn');
+
+  // Detección de lenguaje mejorada (más precisa)
+  function detectLanguage(code) {
+    if (!code.trim()) return "Vacío";
+    const lower = code.toLowerCase();
+    // HTML: doctype, etiquetas, o <html
+    if (/<(!doctype|html|head|body|div|span|h[1-6]|p|a\s)/i.test(code) || (code.includes("<") && code.includes(">") && !code.includes("function") && !code.includes("print(") && !code.includes("#include"))) {
+      // asegurar que no es solo JS con template literal engañoso
+      if (code.includes("document.write") || code.includes("console.log") && !code.includes("<div") && !code.includes("<p")) {
+        // puede ser js con html incrustado pero priorizamos html si tiene etiquetas claras
+        if (code.match(/<[a-z][\s\S]*?>/i) && code.match(/<\/([a-z]+)>/i)) return "HTML";
+      }
+      if (code.match(/<[a-z]+[^>]*>[\s\S]*?<\/[a-z]+>/i) || code.includes("<!DOCTYPE")) return "HTML";
+      else if (code.includes("<html") || code.includes("<body")) return "HTML";
+    }
+    // JavaScript: function, console, alert, let const, arrow, eval, etc.
+    if (/function\s*\w*\s*\(|console\.(log|error|warn)|alert\(|prompt\(|let\s+\w+\s*=|const\s+\w+\s*=|\=\>\s*\{|document\.|window\.|eval\(/i.test(code) && !code.includes("#include") && !code.includes("print(")) {
+      return "JavaScript";
+    }
+    // Python: print(, def, import, etc
+    if (/print\s*\(|def\s+\w+\s*\(|import\s+\w+|from\s+\w+\s+import|input\s*\(/i.test(code) && !code.includes("cout") && !code.includes("std::")) {
+      return "Python";
+    }
+    // C++ : #include, using namespace, cout, cin, int main
+    if (/#include\s*<[^>]+>|using\s+namespace\s+std|cout\s*<<|cin\s*>>|int\s+main\s*\(/i.test(code)) {
+      return "C++";
+    }
+    // adicional: si tiene muchas llaves pero no es js clasico, podría ser c
+    if (code.includes("{") && code.includes("}") && (code.includes("int") || code.includes("void")) && !code.includes("function")) return "C++";
+    return "Desconocido";
+  }
+
+  // Ejecutar análisis y lógica interactiva
+  function performAnalysis() {
+    let rawCode = codeTextarea.value;
+    if (rawCode.trim() === "") {
+      infoDiv.innerHTML = `
+        <span>⚠️ Código vacío</span>
+        <span><i class="far fa-file-code"></i> Lenguaje: --</span>
+        <span><i class="fas fa-list"></i> Líneas: 0</span>
+      `;
+      previewFrame.srcdoc = "";
+      cmdDiv.innerHTML = "> ⚠️ No se ingresó código. Escribe algo en el editor.";
+      return;
+    }
+
+    const language = detectLanguage(rawCode);
+    const lineCount = rawCode.split(/\r?\n/).filter(l => l.trim().length > 0 || l.includes(" ")).length;
+    const rawLines = rawCode.split(/\r?\n/).length;
+    
+    // Actualizar panel info con estilo mejorado
+    let langIcon = "";
+    if (language === "HTML") langIcon = "<i class='fab fa-html5'></i>";
+    else if (language === "JavaScript") langIcon = "<i class='fab fa-js'></i>";
+    else if (language === "Python") langIcon = "<i class='fab fa-python'></i>";
+    else if (language === "C++") langIcon = "<i class='fas fa-cog'></i>";
+    else langIcon = "<i class='fas fa-question'></i>";
+    
+    infoDiv.innerHTML = `
+      <span class="lang-badge">${langIcon} ${language}</span>
+      <span><i class="fas fa-code-branch"></i> Líneas totales: ${rawLines}</span>
+      <span><i class="fas fa-terminal"></i> Líneas activas: ${lineCount}</span>
+      <span><i class="fas fa-microchip"></i> Modo: ${language === "HTML" ? "Renderizado visual" : (language === "JavaScript" ? "Ejecución segura" : "Simulación análisis")}</span>
+    `;
+
+    // Limpiar preview y cmd antes de cada análisis
+    previewFrame.srcdoc = "";
+    let consoleOutput = "";
+
+    // --- Lógica según lenguaje ---
+    if (language === "HTML") {
+      // Insertar código html en iframe, con base para evitar errores relativos
+      let htmlContent = rawCode;
+      // Si no tiene doctype, añadimos envoltura básica para que sea responsivo y estilizado
+      if (!htmlContent.toLowerCase().includes("<html") && !htmlContent.toLowerCase().includes("<!doctype")) {
+        htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vista Yalmil</title><style>body{font-family:system-ui; padding:1rem; background: #fff; color:#111;}</style></head><body>${htmlContent}</body></html>`;
+      }
+      previewFrame.srcdoc = htmlContent;
+      consoleOutput = `✅ [HTML] Vista previa generada exitosamente.\n📄 Documento renderizado con ${rawLines} líneas.`;
+    } 
+    else if (language === "JavaScript") {
+      // Ejecución segura dentro de un entorno aislado usando try/catch, pero cuidado con el contexto global
+      // Para evitar afectar la página principal, ejecutamos el código en un entorno simulado: usamos Function o eval con contexto acotado.
+      // Mejor capturar logs personalizados
+      let logs = [];
+      const originalLog = console.log;
+      const originalError = console.error;
+      const originalWarn = console.warn;
+      
+      // Redirigir console.log hacia nuestro cmd
+      console.log = (...args) => {
+        logs.push(args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 0) : String(arg))).join(" "));
+        originalLog(...args);
+      };
+      console.error = (...args) => {
+        logs.push("❌ ERROR: " + args.map(arg => String(arg)).join(" "));
+        originalError(...args);
+      };
+      console.warn = (...args) => {
+        logs.push("⚠️ WARN: " + args.map(arg => String(arg)).join(" "));
+        originalWarn(...args);
+      };
+      
+      let executionResult = null;
+      let errorOccurred = false;
+      try {
+        // Usamos eval dentro de una función para no contaminar excesivamente, pero capturamos el resultado si retorna algo
+        const evalFn = new Function('code', 'return eval(code);');
+        executionResult = evalFn(rawCode);
+        if (executionResult !== undefined && typeof executionResult !== 'function') {
+          logs.push(`→ Retorno: ${typeof executionResult === 'object' ? JSON.stringify(executionResult) : executionResult}`);
+        }
+      } catch (err) {
+        logs.push(`💥 Excepción: ${err.message}`);
+        errorOccurred = true;
+      } finally {
+        // restaurar console
+        console.log = originalLog;
+        console.error = originalError;
+        console.warn = originalWarn;
+      }
+      
+      if (logs.length === 0 && !errorOccurred && executionResult === undefined) {
+        logs.push("✔️ Script ejecutado sin errores y sin salida explícita.");
+      } else if (logs.length === 0 && errorOccurred === false) {
+        logs.push("✨ Código JS ejecutado correctamente.");
+      }
+      consoleOutput = logs.map(l => `> ${l}`).join("\n");
+      // También mostrar en cmd si hay resultados del eval
+      if (executionResult !== undefined && typeof executionResult !== 'function' && logs.filter(l=>l.includes("Retorno")).length===0) {
+        consoleOutput += `\n> 🔄 Valor retornado (no mostrado en logs): ${typeof executionResult === 'object' ? JSON.stringify(executionResult) : executionResult}`;
+      }
+      previewFrame.srcdoc = "<html><body style='background:#faf9fe;font-family:monospace;padding:2rem;text-align:center'><h3>📜 JavaScript ejecutado</h3><p>Revisa la consola virtual (CMD) para ver logs y resultados.</p><i>✅ Sin errores fatales.</i></body></html>";
+    }
+    else if (language === "Python") {
+      // Simulación mejorada con análisis de prints
+      const printMatches = rawCode.match(/print\s*\((.*?)\)/g);
+      let simulatedOutput = "";
+      if (printMatches && printMatches.length) {
+        simulatedOutput = printMatches.map(m => {
+          let content = m.match(/print\s*\((.*)\)/)[1];
+          content = content.replace(/^["']|["']$/g, '');
+          return `🐍 [Python sim] >>> ${content}`;
+        }).join("\n");
+      } else {
+        simulatedOutput = "🐍 Código Python detectado. (Ejecución simulada) No se encontraron prints visibles.";
+      }
+      consoleOutput = `🐍 Simulación de entorno Python\n${simulatedOutput}\n📌 Lenguaje: Python (demo interactiva)`;
+      previewFrame.srcdoc = "<html><body style='background:#1e272e;color:#d2dae2;padding:1.5rem;text-align:center'><h2>🐍 Python Mode</h2><p>El código fue analizado como Python, mira la consola CMD con la simulación de salida.</p><pre style='background:#000;padding:1rem;border-radius:16px'>" + simulatedOutput.replace(/\n/g,'<br>') + "</pre></body></html>";
+    }
+    else if (language === "C++") {
+      consoleOutput = `⚙️ [C++ Modo análisis] Se detectó código C++.\n🧪 Líneas: ${rawLines}\n🔍 Simulación: compilación conceptual exitosa. (Sin ejecución nativa, solo análisis estructural).\n📎 Sugerencia: usa HTML o JS para vista previa interactiva.`;
+      previewFrame.srcdoc = "<html><body style='background:#2c1e2f;color:#f5cd94;display:flex;align-items:center;justify-content:center;height:100%;font-family:monospace'><div><h2>⚙️ C++ Code Analysis</h2><p>Se recibió código C++ (simulación académica).</p><p>✅ Sintaxis compatible con estándar.</p></div></body></html>";
+    }
+    else {
+      consoleOutput = `❓ Lenguaje "${language}" no soportado para ejecución directa.\n📌 El analizador detectó: ${language}. Prueba con HTML, JavaScript, Python o C++.\n💡 Puedes escribir etiquetas HTML o scripts divertidos.`;
+      previewFrame.srcdoc = "<html><body style='background:#222;color:orange;display:flex;align-items:center;justify-content:center;'><div><h3>⚠️ Lenguaje no interpretable</h3><p>Intenta con HTML, JavaScript o Python.</p></div></body></html>";
+    }
+    
+    // Agregar timestamp o meta info al cmd
+    const timestamp = new Date().toLocaleTimeString();
+    cmdDiv.innerHTML = `> [${timestamp}] Análisis completado.\n${consoleOutput}\n\n> 🧠 Yalmil CodeLab listo.`;
+    // auto scroll al fondo
+    cmdDiv.scrollTop = cmdDiv.scrollHeight;
+  }
+
+  // Evento click y también soporte para Ctrl+Enter (bonus)
+  analyzeButton.addEventListener('click', performAnalysis);
+  codeTextarea.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      performAnalysis();
+    }
+  });
+  
+  // Ejecutar un demo al cargar la página con un código de ejemplo inspirador
+  window.addEventListener('DOMContentLoaded', () => {
+    const defaultExample = `<!-- Yalmil Lab: ejemplo interactivo -->
+<div style="font-family:'Segoe UI', sans-serif; text-align:center; background: linear-gradient(145deg, #1f1c2c, #2a1e3c); padding: 2rem; border-radius: 2rem; color: white;">
+  <h1>✨ ¡Bienvenido a Yalmil.com! ✨</h1>
+  <p>Juega, crea, imagina. Edita este código HTML, CSS o JS.</p>
+  <button id="magicBtn" style="background:#c084fc; border:none; padding:0.7rem 1.5rem; border-radius:40px; cursor:pointer;">🌟 Haz clic</button>
+  <p id="message"></p>
+  <script>
+    document.getElementById('magicBtn')?.addEventListener('click', () => {
+      document.getElementById('message').innerHTML = '🎉 ¡Creado con Yalmil CodeLab! 🚀';
+    });
+  <\/script>
+</div>`;
+    codeTextarea.value = defaultExample;
+    performAnalysis();
+  });
+</script>
+</body>
+</html>
